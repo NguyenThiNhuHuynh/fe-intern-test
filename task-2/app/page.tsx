@@ -12,10 +12,10 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import * as Yup from "yup";
-import dayjs, { Dayjs } from "dayjs";
-import CustomDateTimePicker from "@/components/ui/DateTimePicker";
+import { Dayjs } from "dayjs";
 import SelectInput from "@/components/ui/SelectInput";
 import TextInput from "@/components/ui/TextInput";
+import { DateTimePicker } from "@/components/ui/DateTimePicker";
 
 const validationSchema = Yup.object({
   dateTime: Yup.date().required("Thời gian là bắt buộc"),
@@ -42,7 +42,7 @@ interface ValidationErrors {
 }
 
 export default function TransactionForm() {
-  const [dateTime, setDateTime] = useState<Dayjs | null>(dayjs());
+  const [dateTime, setDateTime] = useState<Date | null>(null);
   const [quantity, setQuantity] = useState<string>("");
   const [station, setStation] = useState<string>("");
   const [revenue, setRevenue] = useState<string>("");
@@ -67,7 +67,7 @@ export default function TransactionForm() {
     validateField(field, value);
     switch (field) {
       case "dateTime":
-        setDateTime(value as Dayjs | null);
+        setDateTime(value as Date | null);
         break;
       case "quantity":
         setQuantity(value as string);
@@ -159,22 +159,23 @@ export default function TransactionForm() {
 
       <Container maxWidth="sm" sx={{ mt: 3 }}>
         <Box display="flex" flexDirection="column" gap={2}>
-          <CustomDateTimePicker
+          <DateTimePicker
             label="Thời gian"
-            value={dateTime}
-            onChange={(newValue) => handleInputChange("dateTime", newValue)}
+            value={dateTime} // Dayjs | null (đúng kiểu bạn đang dùng)
+            onChange={(v) => handleInputChange("dateTime", v as Dayjs | null)}
             error={!!errors.dateTime}
             helperText={errors.dateTime}
+            roundedClass="rounded-[8px]"
           />
 
           <TextInput
             label="Số lượng"
             type="number"
-            fullWidth
             value={quantity}
             onChange={(e) => handleInputChange("quantity", e.target.value)}
             error={!!errors.quantity}
             helperText={errors.quantity}
+            roundedClass="rounded-lg"
           />
 
           <SelectInput

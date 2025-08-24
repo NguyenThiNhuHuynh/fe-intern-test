@@ -2,9 +2,10 @@
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import { Button, InputLabel, Container, Stack } from "@mui/material";
-import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
+import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import CloseIcon from "@mui/icons-material/Close";
+import { CustomTimePicker } from "@/components/ui/TimePicker";
 
 interface TransactionRow {
   STT?: number;
@@ -112,12 +113,23 @@ export default function Home() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <div className="p-6 shadow-2xl rounded-2xl space-y-4">
+    <Container
+      maxWidth="md"
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundColor: "#1E2021",
+      }}
+    >
+      <div className="py-10 px-6 shadow-md text-[#CFBFAD] bg-[#252525] rounded-xl space-y-10">
         <h1 className="text-3xl font-bold">Tính tổng Thành tiền</h1>
         <Stack spacing={3}>
           <div className="rounded-2xl w-fit">
-            <InputLabel shrink>Upload file Excel</InputLabel>
+            <InputLabel sx={{ color: "#CFBFAD !important" }} shrink>
+              Upload file Excel
+            </InputLabel>
             <input
               id="upload-excel"
               type="file"
@@ -132,23 +144,23 @@ export default function Home() {
               sx={{
                 borderRadius: 2,
                 textTransform: "none",
-                background: "#106df7",
+                background: "#768D85",
                 paddingLeft: 3,
                 paddingRight: 3,
                 "&:hover": {
-                  backgroundColor: "#0b5ed7",
+                  backgroundColor: "#516b62",
                   transform: "scale(1.05)",
                 },
               }}
             >
-              Select file
+              Chọn file
             </Button>
 
             {file && (
-              <div className="border rounded-xl mt-2 pl-4 border-[#CCC]">
+              <div className="mt-2">
                 <span className="text-[12px]">{file.name}</span>
                 <Button onClick={removeFile}>
-                  <CloseIcon />
+                  <CloseIcon className="text-[#768D85]" />
                 </Button>
               </div>
             )}
@@ -157,46 +169,18 @@ export default function Home() {
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <Stack direction="row" spacing={2}>
               <div className="flex-1">
-                <InputLabel>Giờ bắt đầu</InputLabel>
-                <TimePicker
-                  value={startTime ? new Date(`1970-01-01T${startTime}`) : null}
-                  onChange={(newValue) => {
-                    if (newValue) {
-                      const h = newValue.getHours().toString().padStart(2, "0");
-                      const m = newValue
-                        .getMinutes()
-                        .toString()
-                        .padStart(2, "0");
-                      const s = newValue
-                        .getSeconds()
-                        .toString()
-                        .padStart(2, "0");
-                      setStartTime(`${h}:${m}:${s}`);
-                    }
-                  }}
-                  slotProps={{ textField: { fullWidth: true } }}
+                <CustomTimePicker
+                  label="Giờ bắt đầu"
+                  value={startTime}
+                  onChange={(val) => setStartTime(val)}
                 />
               </div>
 
               <div className="flex-1">
-                <InputLabel>Giờ kết thúc</InputLabel>
-                <TimePicker
-                  value={endTime ? new Date(`1970-01-01T${endTime}`) : null}
-                  onChange={(newValue) => {
-                    if (newValue) {
-                      const h = newValue.getHours().toString().padStart(2, "0");
-                      const m = newValue
-                        .getMinutes()
-                        .toString()
-                        .padStart(2, "0");
-                      const s = newValue
-                        .getSeconds()
-                        .toString()
-                        .padStart(2, "0");
-                      setEndTime(`${h}:${m}:${s}`);
-                    }
-                  }}
-                  slotProps={{ textField: { fullWidth: true } }}
+                <CustomTimePicker
+                  label="Giờ kết thúc"
+                  value={endTime}
+                  onChange={(val) => setEndTime(val)}
                 />
               </div>
             </Stack>
@@ -210,11 +194,11 @@ export default function Home() {
               sx={{
                 borderRadius: 2,
                 textTransform: "none",
-                background: "#106df7",
+                background: "#768D85",
                 paddingLeft: 3,
                 paddingRight: 3,
                 "&:hover": {
-                  backgroundColor: "#0b5ed7",
+                  backgroundColor: "#516b62",
                   transform: "scale(1.05)",
                 },
               }}
@@ -224,7 +208,7 @@ export default function Home() {
           </div>
 
           {total !== null && (
-            <span className="text-xl font-semibold">
+            <span className="text-base font-semibold">
               Tổng thành tiền: {total.toLocaleString()} VND
             </span>
           )}

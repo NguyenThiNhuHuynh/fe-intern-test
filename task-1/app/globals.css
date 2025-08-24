@@ -4,14 +4,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #1e2021;
   --foreground: #171717;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
+  --background: #1e2021;
   --foreground: #171717;
   --font: "Inter", sans-serif;
 }
