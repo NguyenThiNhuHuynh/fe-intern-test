@@ -1,20 +1,10 @@
 "use client";
 import { useState } from "react";
 import * as XLSX from "xlsx";
-
-// MUI components
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-  InputLabel,
-  Container,
-  Stack,
-  Paper,
-} from "@mui/material";
-
-import TimePicker from "@/components/ui/time-picker"; // Nếu muốn có thể thay bằng MUI TimePicker
+import { Button, InputLabel, Container, Stack } from "@mui/material";
+import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface TransactionRow {
   STT?: number;
@@ -33,6 +23,7 @@ interface TransactionRow {
 
 export default function Home() {
   const [data, setData] = useState<TransactionRow[]>([]);
+  const [file, setFile] = useState<File | null>(null);
   const [startTime, setStartTime] = useState("08:00:00");
   const [endTime, setEndTime] = useState("22:00:00");
   const [total, setTotal] = useState<number | null>(null);
@@ -48,8 +39,10 @@ export default function Home() {
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const uploadedFile = e.target.files?.[0];
+    if (!uploadedFile) return;
+
+    setFile(uploadedFile);
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -61,6 +54,7 @@ export default function Home() {
       const jsonData = XLSX.utils.sheet_to_json<TransactionRow>(worksheet, {
         range: 7,
       });
+
       const cleanedData: TransactionRow[] = jsonData.map((row) => {
         const rawValue = row["Thành tiền (VNĐ)"] as unknown;
         let value: number;
@@ -81,7 +75,12 @@ export default function Home() {
 
       setData(cleanedData);
     };
-    reader.readAsBinaryString(file);
+    reader.readAsBinaryString(uploadedFile);
+  };
+
+  const removeFile = () => {
+    setFile(null);
+    setData([]);
   };
 
   const calculateTotal = () => {
@@ -104,61 +103,133 @@ export default function Home() {
       return t >= startSec && t <= endSec;
     });
 
-    const totalValue = filtered.reduce((sum, row) => {
-      return sum + (row["Thành tiền (VNĐ)"] || 0);
-    }, 0);
+    const totalValue = filtered.reduce(
+      (sum, row) => sum + (row["Thành tiền (VNĐ)"] || 0),
+      0
+    );
 
     setTotal(totalValue);
   };
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          📊 Nhập giao dịch
-        </Typography>
-
+      <div className="p-6 shadow-2xl rounded-2xl space-y-4">
+        <h1 className="text-3xl font-bold">Tính tổng Thành tiền</h1>
         <Stack spacing={3}>
-          <Box className="rounded-2xl">
-            <InputLabel shrink htmlFor="upload-excel">
-              Upload file Excel
-            </InputLabel>
-            <TextField
+          <div className="rounded-2xl w-fit">
+            <InputLabel shrink>Upload file Excel</InputLabel>
+            <input
               id="upload-excel"
               type="file"
-              inputProps={{ accept: ".xlsx,.xls" }}
+              accept=".xlsx,.xls"
+              style={{ display: "none" }}
               onChange={handleFileUpload}
-              fullWidth
             />
-          </Box>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => document.getElementById("upload-excel")?.click()}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                background: "#106df7",
+                paddingLeft: 3,
+                paddingRight: 3,
+                "&:hover": {
+                  backgroundColor: "#0b5ed7",
+                  transform: "scale(1.05)",
+                },
+              }}
+            >
+              Select file
+            </Button>
 
-          <Stack direction="row" spacing={2}>
-            <Box flex={1}>
-              <InputLabel>Giờ bắt đầu</InputLabel>
-              <TimePicker setTime={setStartTime} initialTime={startTime} />
-            </Box>
-            <Box flex={1}>
-              <InputLabel>Giờ kết thúc</InputLabel>
-              <TimePicker setTime={setEndTime} initialTime={endTime} />
-            </Box>
-          </Stack>
+            {file && (
+              <div className="border rounded-xl mt-2 pl-4 border-[#CCC]">
+                <span className="text-[12px]">{file.name}</span>
+                <Button onClick={removeFile}>
+                  <CloseIcon />
+                </Button>
+              </div>
+            )}
+          </div>
 
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={calculateTotal}
-            sx={{ alignSelf: "flex-start" }}
-          >
-            Tính tổng
-          </Button>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <Stack direction="row" spacing={2}>
+              <div className="flex-1">
+                <InputLabel>Giờ bắt đầu</InputLabel>
+                <TimePicker
+                  value={startTime ? new Date(`1970-01-01T${startTime}`) : null}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      const h = newValue.getHours().toString().padStart(2, "0");
+                      const m = newValue
+                        .getMinutes()
+                        .toString()
+                        .padStart(2, "0");
+                      const s = newValue
+                        .getSeconds()
+                        .toString()
+                        .padStart(2, "0");
+                      setStartTime(`${h}:${m}:${s}`);
+                    }
+                  }}
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </div>
+
+              <div className="flex-1">
+                <InputLabel>Giờ kết thúc</InputLabel>
+                <TimePicker
+                  value={endTime ? new Date(`1970-01-01T${endTime}`) : null}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      const h = newValue.getHours().toString().padStart(2, "0");
+                      const m = newValue
+                        .getMinutes()
+                        .toString()
+                        .padStart(2, "0");
+                      const s = newValue
+                        .getSeconds()
+                        .toString()
+                        .padStart(2, "0");
+                      setEndTime(`${h}:${m}:${s}`);
+                    }
+                  }}
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </div>
+            </Stack>
+          </LocalizationProvider>
+
+          <div className="w-fit">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={calculateTotal}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                background: "#106df7",
+                paddingLeft: 3,
+                paddingRight: 3,
+                "&:hover": {
+                  backgroundColor: "#0b5ed7",
+                  transform: "scale(1.05)",
+                },
+              }}
+            >
+              Tính tổng
+            </Button>
+          </div>
 
           {total !== null && (
-            <Typography variant="h6">
+            <span className="text-xl font-semibold">
               Tổng thành tiền: {total.toLocaleString()} VND
-            </Typography>
+            </span>
           )}
         </Stack>
-      </Paper>
+      </div>
     </Container>
   );
 }
