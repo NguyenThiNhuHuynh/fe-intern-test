@@ -3,7 +3,7 @@
 CREATE DATABASE GasStationDB;
 
 -- Sử dụng database
-USE GasStationDB;
+\c GasStationDB
 
 --------------------------CREATE TABLE--------------------------
 -- Bảng trạm xăng
